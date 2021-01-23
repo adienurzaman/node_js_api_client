@@ -1,22 +1,39 @@
-const express = require('express')
-const path = require('path')
-const { get } = require('request')
+const express = require('express');
+const path = require('path');
+const exphbs = require('express-handlebars');
+const hbs = require("hbs");
+const { get } = require('request');
 
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const viewsDir = path.join(__dirname, 'views')
-app.use(express.static(viewsDir))
+const viewsDir = path.join(__dirname, 'views');
+app.set("views", viewsDir);
+
+// set view engine
+app.engine("hbs", exphbs({
+  layoutsDir: viewsDir + '/layout',
+  defaultLayout: 'main',
+  extname: '.hbs'
+}));
+
+app.set("view engine", "hbs");
 
 app.get('/', (req, res) => res.redirect('/user'))
-app.get('/user', (req, res) => res.sendFile(path.join(viewsDir, 'user.html')))
+app.get('/user', (req, res) => {
+  res.render('user', {
+    data: {
+      title: "GET DATA API"
+    }
+  });
+});
 
-app.listen(3000, () => console.log('Listening on port 3000!'))
+app.listen(3000, () => console.log('Listening on port 3000!'));
 
 function request(url, returnBuffer = true, timeout = 10000) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     const options = Object.assign(
       {},
       {
@@ -30,7 +47,7 @@ function request(url, returnBuffer = true, timeout = 10000) {
       returnBuffer ? { encoding: null } : {}
     )
 
-    get(options, function(err, res) {
+    get(options, function (err, res) {
       if (err) return reject(err)
       return resolve(res)
     })
